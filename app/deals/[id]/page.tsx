@@ -1,8 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { formatPrice, formatDate, calculateDiscount } from '@/lib/utils'
-import { Flame, Clock, MessageCircle, ExternalLink, Share2 } from 'lucide-react'
+import { ExternalLink, Share2 } from 'lucide-react'
 import Link from 'next/link'
+import { VoteButtons } from '@/components/deals/VoteButtons'
+import { CommentSection } from '@/components/deals/CommentSection'
 
 interface DealPageProps {
   params: { id: string }
@@ -80,16 +82,13 @@ export default async function DealPage({ params }: DealPageProps) {
               )}
             </div>
 
-            {/* Temperature */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${
-                deal.temperature >= 100 ? 'bg-green-100 text-green-700' :
-                deal.temperature >= 0 ? 'bg-gray-100 text-gray-700' :
-                'bg-red-100 text-red-700'
-              }`}>
-                <Flame className="w-4 h-4" />
-                <span className="font-semibold">{deal.temperature}°</span>
-              </div>
+            {/* Vote Buttons */}
+            <div className="flex items-center gap-4 mb-6">
+              <VoteButtons
+                dealId={deal.id}
+                initialVotes={deal.voteCount}
+                initialTemperature={deal.temperature}
+              />
               <span className="text-sm text-gray-500">{deal.voteCount} Votes</span>
             </div>
 
@@ -118,35 +117,15 @@ export default async function DealPage({ params }: DealPageProps) {
         <p className="text-gray-600 leading-relaxed">{deal.description}</p>
       </div>
 
-      {/* Comments */}
-      <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <MessageCircle className="w-5 h-5" />
-          Kommentare ({deal.comments.length})
-        </h2>
-
-        {deal.comments.length > 0 ? (
-          <div className="space-y-4">
-            {deal.comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3 pb-4 border-b border-gray-100 last:border-0">
-                <img
-                  src={comment.author.avatar || '/avatar-default.png'}
-                  alt={comment.author.username}
-                  className="w-10 h-10 rounded-full bg-gray-100"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{comment.author.username}</span>
-                    <span className="text-sm text-gray-400">{formatDate(comment.createdAt)}</span>
-                  </div>
-                  <p className="text-gray-600">{comment.content}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-400 text-center py-8">Noch keine Kommentare. Sei der Erste! 🚀</p>
-        )}
+      {/* Comments - Client Component */}
+      <div className="mt-6">
+        <CommentSection 
+          dealId={deal.id} 
+          initialComments={deal.comments.map(c => ({
+            ...c,
+            createdAt: c.createdAt.toISOString() as unknown as Date
+          }))} 
+        />
       </div>
     </main>
   )

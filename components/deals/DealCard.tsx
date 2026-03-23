@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Flame, MessageCircle, ExternalLink } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 import { formatPrice, formatDate, calculateDiscount } from '@/lib/utils'
+import { VoteButtons } from './VoteButtons'
 
 interface DealCardProps {
   deal: {
@@ -80,15 +81,12 @@ export function DealCard({ deal }: DealCardProps) {
           {/* Stats */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
             <div className="flex items-center gap-4">
-              {/* Temperature */}
-              <div className={`flex items-center gap-1 text-sm font-medium ${
-                deal.temperature >= 100 ? 'text-green-600' :
-                deal.temperature >= 0 ? 'text-gray-600' :
-                'text-red-600'
-              }`}>
-                <Flame className="w-4 h-4" />
-                <span>{deal.temperature}°</span>
-              </div>
+              {/* Vote Buttons */}
+              <VoteButtons 
+                dealId={deal.id}
+                initialVotes={deal.voteCount}
+                initialTemperature={deal.temperature}
+              />
 
               {/* Comments */}
               <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -99,11 +97,9 @@ export function DealCard({ deal }: DealCardProps) {
 
             {/* Author */}
             <div className="flex items-center gap-2">
-              <img
-                src={deal.author.avatar || '/avatar-default.png'}
-                alt={deal.author.username}
-                className="w-6 h-6 rounded-full bg-gray-100"
-              />
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center text-white text-xs font-bold">
+                {deal.author.username.charAt(0).toUpperCase()}
+              </div>
               <span className="text-xs text-gray-500">{deal.author.username}</span>
             </div>
           </div>
