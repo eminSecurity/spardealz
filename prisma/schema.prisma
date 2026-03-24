@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  username  String    @unique
-  name      String?
-  avatar    String?
-  role      Role      @default(USER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deals     Deal[]
-  votes     Vote[]
-  comments  Comment[]
+  id          String        @id @default(uuid())
+  email       String        @unique
+  username    String        @unique
+  name        String?
+  avatar      String?
+  role        Role          @default(USER)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deals       Deal[]
+  votes       Vote[]
+  comments    Comment[]
+  priceAlerts PriceAlert[]
 }
 
 model Deal {
@@ -44,6 +45,8 @@ model Deal {
   expiresAt     DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+  product       Product?   @relation(fields: [productId], references: [id])
+  productId     String?
 }
 
 model Vote {
@@ -82,6 +85,50 @@ model Tag {
   name  String @unique
   slug  String @unique
   deals Deal[]
+}
+
+// Preisvergleich Models
+model Product {
+  id          String         @id @default(uuid())
+  name        String
+  ean         String?        @unique
+  brand       String?
+  model       String?
+  description String?
+  imageUrl    String?
+  specs       Json?          // Technische Daten
+  deals       Deal[]
+  prices      PriceHistory[]
+  alerts      PriceAlert[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model PriceHistory {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  merchant  String
+  price     Float
+  currency  String   @default("EUR")
+  shipping  Float?
+  url       String
+  inStock   Boolean  @default(true)
+  recordedAt DateTime @default(now())
+}
+
+model PriceAlert {
+  id          String    @id @default(uuid())
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  targetPrice Float
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  triggeredAt DateTime?
+
+  @@unique([productId, userId])
 }
 
 enum Role {
